@@ -59,11 +59,13 @@
       left: 50%;
       transform: translateX(-50%);
       width: 90%;
+
       font-size: 14px;
       letter-spacing: .08em;
       text-transform: uppercase;
       opacity: .85;
       text-align: center;
+
       z-index: 5;
     }
 
@@ -72,10 +74,13 @@
       bottom: max(28px, calc(env(safe-area-inset-bottom) + 18px));
       left: 50%;
       transform: translateX(-50%);
+
       width: min(320px, 72vw);
       height: 2px;
+
       background: rgba(255,255,255,.28);
       overflow: hidden;
+
       z-index: 5;
     }
 
@@ -89,18 +94,26 @@
     #message {
       position: absolute;
       inset: 0;
+
       display: flex;
       align-items: center;
       justify-content: center;
+
       padding: 8vw;
+
       background: rgba(0,0,0,.72);
+
       text-align: center;
+
       font-size: clamp(28px, 5vw, 64px);
       line-height: 1.08;
       font-weight: 500;
+
       opacity: 0;
       pointer-events: none;
+
       transition: opacity .45s ease;
+
       z-index: 20;
     }
 
@@ -111,16 +124,22 @@
 
     #restart {
       position: absolute;
+
       bottom: max(34px, calc(env(safe-area-inset-bottom) + 24px));
       left: 50%;
       transform: translateX(-50%);
+
       border: 1px solid rgba(255,255,255,.7);
       background: transparent;
       color: white;
+
       border-radius: 999px;
       padding: 12px 18px;
+
       font-size: 14px;
+
       display: none;
+
       z-index: 25;
     }
 
@@ -131,14 +150,19 @@
     #start {
       position: absolute;
       inset: 0;
+
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+
       gap: 18px;
       padding: 30px;
+
       text-align: center;
+
       background: #000;
+
       z-index: 30;
     }
 
@@ -146,8 +170,11 @@
       border: 1px solid #fff;
       background: #fff;
       color: #000;
+
       border-radius: 999px;
+
       padding: 14px 22px;
+
       font-size: 17px;
     }
 
@@ -218,7 +245,7 @@
   </div>
 
 
-<script type="module">
+<script>
 
 /* =========================================================
    AUSSAGEN
@@ -321,11 +348,9 @@ const errorEl = document.querySelector("#error");
    VARIABLEN
    ========================================================= */
 
-let detector = null;
 let cameraStream = null;
-let faceStart = null;
-let triggered = false;
-let lastVideoTime = -1;
+let timer = null;
+let startTime = null;
 let lastStatement = -1;
 
 
@@ -338,8 +363,14 @@ function pickStatement() {
   let i;
 
   do {
-    i = Math.floor(Math.random() * statements.length);
+
+    i =
+      Math.floor(
+        Math.random() * statements.length
+      );
+
   }
+
   while (
     statements.length > 1 &&
     i === lastStatement
@@ -348,72 +379,6 @@ function pickStatement() {
   lastStatement = i;
 
   return statements[i];
-}
-
-
-/* =========================================================
-   MEDIAPIPE DYNAMISCH LADEN
-   ========================================================= */
-
-async function initDetector() {
-
-  statusEl.textContent =
-    "Gesichtserkennung wird geladen …";
-
-  try {
-
-    const visionModule =
-      await import(
-        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/+esm"
-      );
-
-    const {
-      FaceDetector,
-      FilesetResolver
-    } = visionModule;
-
-
-    const vision =
-      await FilesetResolver.forVisionTasks(
-        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm"
-      );
-
-
-    detector =
-      await FaceDetector.createFromOptions(
-        vision,
-        {
-
-          baseOptions: {
-
-            modelAssetPath:
-              "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite"
-
-          },
-
-          runningMode: "VIDEO",
-
-          minDetectionConfidence: 0.55
-
-        }
-      );
-
-  }
-
-  catch (err) {
-
-    console.error(
-      "MEDIAPIPE FEHLER:",
-      err
-    );
-
-    throw new Error(
-      "Die Gesichtserkennung konnte nicht geladen werden. " +
-      "Bitte überprüfe die Internetverbindung."
-    );
-
-  }
-
 }
 
 
@@ -428,14 +393,13 @@ async function startCamera() {
   startBtn.textContent =
     "Kamera wird gestartet …";
 
-  errorEl.style.display = "none";
+  errorEl.style.display =
+    "none";
 
 
   try {
 
-    /* -----------------------------------------
-       HTTPS
-       ----------------------------------------- */
+    /* HTTPS prüfen */
 
     if (
       !window.isSecureContext &&
@@ -449,9 +413,7 @@ async function startCamera() {
     }
 
 
-    /* -----------------------------------------
-       KAMERA API
-       ----------------------------------------- */
+    /* Kamera-API prüfen */
 
     if (
       !navigator.mediaDevices ||
@@ -465,31 +427,17 @@ async function startCamera() {
     }
 
 
-    /* -----------------------------------------
-       KAMERA ÖFFNEN
-       ----------------------------------------- */
-
     statusEl.textContent =
       "Kamera wird geöffnet …";
 
+
+    /* Kamera öffnen */
 
     cameraStream =
       await navigator.mediaDevices.getUserMedia({
 
         video: {
-
-          facingMode: {
-            ideal: "user"
-          },
-
-          width: {
-            ideal: 1280
-          },
-
-          height: {
-            ideal: 720
-          }
-
+          facingMode: "user"
         },
 
         audio: false
@@ -497,9 +445,7 @@ async function startCamera() {
       });
 
 
-    /* -----------------------------------------
-       VIDEO
-       ----------------------------------------- */
+    /* Kamera mit Video verbinden */
 
     video.srcObject =
       cameraStream;
@@ -508,30 +454,14 @@ async function startCamera() {
     await video.play();
 
 
-    /* -----------------------------------------
-       STARTSCREEN AUSBLENDEN
-       ----------------------------------------- */
+    /* Startbildschirm entfernen */
 
     start.classList.add("hidden");
 
 
-    /* -----------------------------------------
-       MEDIAPIPE
-       ----------------------------------------- */
+    /* Countdown starten */
 
-    await initDetector();
-
-
-    statusEl.textContent =
-      "Schau in die Kamera";
-
-
-    lastVideoTime = -1;
-    faceStart = null;
-    triggered = false;
-
-
-    requestAnimationFrame(loop);
+    startCountdown();
 
   }
 
@@ -547,7 +477,9 @@ async function startCamera() {
 
       cameraStream
         .getTracks()
-        .forEach(track => track.stop());
+        .forEach(
+          track => track.stop()
+        );
 
       cameraStream = null;
 
@@ -558,7 +490,10 @@ async function startCamera() {
       "Kamera konnte nicht gestartet werden.";
 
 
-    if (err.name === "NotAllowedError") {
+    if (
+      err.name ===
+      "NotAllowedError"
+    ) {
 
       text =
         "Der Kamerazugriff wurde verweigert. " +
@@ -566,24 +501,23 @@ async function startCamera() {
 
     }
 
-    else if (err.name === "NotFoundError") {
+    else if (
+      err.name ===
+      "NotFoundError"
+    ) {
 
       text =
         "Es wurde keine Kamera gefunden.";
 
     }
 
-    else if (err.name === "NotReadableError") {
+    else if (
+      err.name ===
+      "NotReadableError"
+    ) {
 
       text =
         "Die Kamera wird bereits von einer anderen App verwendet.";
-
-    }
-
-    else if (err.name === "SecurityError") {
-
-      text =
-        "Der Browser hat den Kamerazugriff aus Sicherheitsgründen blockiert.";
 
     }
 
@@ -602,11 +536,8 @@ async function startCamera() {
       "block";
 
 
-    instructions.textContent =
-      "Bitte überprüfe die Kameraberechtigung und die Internetverbindung.";
-
-
-    startBtn.disabled = false;
+    startBtn.disabled =
+      false;
 
     startBtn.textContent =
       "Erneut versuchen";
@@ -617,167 +548,146 @@ async function startCamera() {
 
 
 /* =========================================================
-   DETECTION ZURÜCKSETZEN
+   5-SEKUNDEN-COUNTDOWN
    ========================================================= */
 
-function resetDetection() {
+function startCountdown() {
 
-  faceStart = null;
+  startTime =
+    performance.now();
 
-  triggered = false;
+
+  statusEl.textContent =
+    "Schau in die Kamera";
+
 
   progress.style.width =
     "0%";
 
-  message.classList.remove("show");
 
-  message.textContent =
-    "";
-
-  statusEl.textContent =
-    "Schau in die Kamera";
+  timer =
+    requestAnimationFrame(
+      updateCountdown
+    );
 
 }
 
 
 /* =========================================================
-   HAUPTSCHLEIFE
+   COUNTDOWN AKTUALISIEREN
    ========================================================= */
 
-function loop() {
+function updateCountdown(now) {
 
-  if (
-    !detector ||
-    video.readyState < 2
-  ) {
+  const elapsed =
+    now - startTime;
 
-    requestAnimationFrame(loop);
+
+  const duration =
+    5000;
+
+
+  const percentage =
+    Math.min(
+      100,
+      (elapsed / duration) * 100
+    );
+
+
+  progress.style.width =
+    percentage + "%";
+
+
+  const remaining =
+    Math.max(
+      0,
+      Math.ceil(
+        (duration - elapsed) / 1000
+      )
+    );
+
+
+  if (remaining > 0) {
+
+    statusEl.textContent =
+      `Schau in die Kamera · ${remaining}`;
+
+  }
+
+
+  if (elapsed >= duration) {
+
+    showStatement();
 
     return;
 
   }
 
 
-  const now =
-    performance.now();
+  timer =
+    requestAnimationFrame(
+      updateCountdown
+    );
+
+}
 
 
-  if (
-    video.currentTime !== lastVideoTime &&
-    !triggered
-  ) {
+/* =========================================================
+   HOROSKOP ANZEIGEN
+   ========================================================= */
 
-    lastVideoTime =
-      video.currentTime;
+function showStatement() {
 
-
-    let result;
+  progress.style.width =
+    "100%";
 
 
-    try {
-
-      result =
-        detector.detectForVideo(
-          video,
-          now
-        );
-
-    }
-
-    catch (err) {
-
-      console.error(
-        "Face detection error:",
-        err
-      );
-
-      requestAnimationFrame(loop);
-
-      return;
-
-    }
+  statusEl.textContent =
+    "";
 
 
-    const faceVisible =
-      result.detections &&
-      result.detections.length > 0;
+  message.textContent =
+    pickStatement();
 
 
-    if (faceVisible) {
+  message.classList.add("show");
 
-      if (faceStart === null) {
-
-        faceStart =
-          now;
-
-      }
+}
 
 
-      const elapsed =
-        now - faceStart;
+/* =========================================================
+   NEUSTART
+   ========================================================= */
 
+function resetDetection() {
 
-      const pct =
-        Math.min(
-          100,
-          (elapsed / 5000) * 100
-        );
+  if (timer) {
 
+    cancelAnimationFrame(timer);
 
-      progress.style.width =
-        pct + "%";
-
-
-      const remaining =
-        Math.max(
-          0,
-          Math.ceil(
-            (5000 - elapsed) / 1000
-          )
-        );
-
-
-      statusEl.textContent =
-        remaining > 0
-          ? `Gesicht erkannt · ${remaining}`
-          : "Gesicht erkannt";
-
-
-      if (elapsed >= 5000) {
-
-        triggered = true;
-
-        progress.style.width =
-          "100%";
-
-        statusEl.textContent =
-          "";
-
-        message.textContent =
-          pickStatement();
-
-        message.classList.add("show");
-
-      }
-
-    }
-
-    else {
-
-      faceStart = null;
-
-      progress.style.width =
-        "0%";
-
-      statusEl.textContent =
-        "Schau in die Kamera";
-
-    }
+    timer = null;
 
   }
 
 
-  requestAnimationFrame(loop);
+  message.classList.remove(
+    "show"
+  );
+
+
+  message.textContent =
+    "";
+
+
+  progress.style.width =
+    "0%";
+
+
+  startTime = null;
+
+
+  statusEl.textContent =
+    "Schau in die Kamera";
 
 }
 
@@ -801,15 +711,6 @@ restart.addEventListener(
 message.addEventListener(
   "click",
   resetDetection
-);
-
-
-/* =========================================================
-   START
-   ========================================================= */
-
-console.log(
-  "Horoskopmaschine geladen."
 );
 
 </script>
