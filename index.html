@@ -42,6 +42,7 @@
     .shade {
       position: absolute;
       inset: 0;
+
       background:
         linear-gradient(
           to bottom,
@@ -50,20 +51,26 @@
           transparent 70%,
           rgba(0,0,0,.3)
         );
+
       pointer-events: none;
     }
 
     #status {
       position: absolute;
+
       top: max(24px, env(safe-area-inset-top));
+
       left: 50%;
       transform: translateX(-50%);
+
       width: 90%;
 
       font-size: 14px;
       letter-spacing: .08em;
       text-transform: uppercase;
+
       opacity: .85;
+
       text-align: center;
 
       z-index: 5;
@@ -71,14 +78,22 @@
 
     #progressWrap {
       position: absolute;
-      bottom: max(28px, calc(env(safe-area-inset-bottom) + 18px));
+
+      bottom:
+        max(
+          28px,
+          calc(env(safe-area-inset-bottom) + 18px)
+        );
+
       left: 50%;
       transform: translateX(-50%);
 
       width: min(320px, 72vw);
+
       height: 2px;
 
       background: rgba(255,255,255,.28);
+
       overflow: hidden;
 
       z-index: 5;
@@ -87,32 +102,47 @@
     #progress {
       width: 0%;
       height: 100%;
+
       background: #fff;
-      transition: width .05s linear;
+
+      transition:
+        width .05s linear;
     }
 
     #message {
       position: absolute;
+
       inset: 0;
 
       display: flex;
+
       align-items: center;
       justify-content: center;
 
       padding: 8vw;
 
-      background: rgba(0,0,0,.72);
+      background:
+        rgba(0,0,0,.72);
 
       text-align: center;
 
-      font-size: clamp(28px, 5vw, 64px);
+      font-size:
+        clamp(
+          28px,
+          5vw,
+          64px
+        );
+
       line-height: 1.08;
+
       font-weight: 500;
 
       opacity: 0;
+
       pointer-events: none;
 
-      transition: opacity .45s ease;
+      transition:
+        opacity .45s ease;
 
       z-index: 20;
     }
@@ -125,16 +155,29 @@
     #restart {
       position: absolute;
 
-      bottom: max(34px, calc(env(safe-area-inset-bottom) + 24px));
-      left: 50%;
-      transform: translateX(-50%);
+      bottom:
+        max(
+          34px,
+          calc(env(safe-area-inset-bottom) + 24px)
+        );
 
-      border: 1px solid rgba(255,255,255,.7);
+      left: 50%;
+
+      transform:
+        translateX(-50%);
+
+      border:
+        1px solid
+        rgba(255,255,255,.7);
+
       background: transparent;
+
       color: white;
 
       border-radius: 999px;
-      padding: 12px 18px;
+
+      padding:
+        12px 18px;
 
       font-size: 14px;
 
@@ -149,14 +192,18 @@
 
     #start {
       position: absolute;
+
       inset: 0;
 
       display: flex;
+
       flex-direction: column;
+
       align-items: center;
       justify-content: center;
 
       gap: 18px;
+
       padding: 30px;
 
       text-align: center;
@@ -167,13 +214,17 @@
     }
 
     #start button {
-      border: 1px solid #fff;
+      border:
+        1px solid #fff;
+
       background: #fff;
+
       color: #000;
 
       border-radius: 999px;
 
-      padding: 14px 22px;
+      padding:
+        14px 22px;
 
       font-size: 17px;
     }
@@ -184,17 +235,25 @@
 
     #start p {
       max-width: 420px;
+
       opacity: .72;
+
       line-height: 1.4;
+
       margin: 0;
     }
 
     #error {
       max-width: 500px;
+
       color: #ff8a8a;
+
       font-size: 13px;
+
       line-height: 1.4;
+
       display: none;
+
       text-align: center;
     }
 
@@ -204,7 +263,13 @@
   </style>
 </head>
 
+
 <body>
+
+
+  <!-- =====================================================
+       KAMERA
+       ===================================================== -->
 
   <video
     id="video"
@@ -213,21 +278,49 @@
     muted>
   </video>
 
+
   <div class="shade"></div>
+
+
+  <!-- =====================================================
+       STATUS
+       ===================================================== -->
 
   <div id="status">
     Kamera bereit
   </div>
 
+
+  <!-- =====================================================
+       FORTSCHRITTSBALKEN
+       ===================================================== -->
+
   <div id="progressWrap">
+
     <div id="progress"></div>
+
   </div>
+
+
+  <!-- =====================================================
+       HOROSKOP-AUSSAGE
+       ===================================================== -->
 
   <div id="message"></div>
 
+
+  <!-- =====================================================
+       NEUE ANALYSE
+       ===================================================== -->
+
   <button id="restart">
-    Noch einmal
+    Physiognomie analysieren
   </button>
+
+
+  <!-- =====================================================
+       STARTBILDSCHIRM
+       ===================================================== -->
 
   <div id="start">
 
@@ -235,17 +328,26 @@
       Kamera starten
     </button>
 
+
     <p id="instructions">
-      Tippe auf „Kamera starten“ und erlaube den Kamerazugriff.
-      Danach schaue für 5 Sekunden in die Kamera.
+
+      Tippe auf „Kamera starten“
+      und erlaube den Kamerazugriff.
+
+      Danach schaue für 5 Sekunden
+      in die Kamera.
+
     </p>
+
 
     <div id="error"></div>
 
   </div>
 
 
+
 <script>
+
 
 /* =========================================================
    AUSSAGEN
@@ -330,18 +432,32 @@ const statements = [
    ELEMENTE
    ========================================================= */
 
-const video = document.querySelector("#video");
-const statusEl = document.querySelector("#status");
-const progress = document.querySelector("#progress");
+const video =
+  document.querySelector("#video");
 
-const message = document.querySelector("#message");
-const restart = document.querySelector("#restart");
+const statusEl =
+  document.querySelector("#status");
 
-const start = document.querySelector("#start");
-const startBtn = document.querySelector("#startBtn");
+const progress =
+  document.querySelector("#progress");
 
-const instructions = document.querySelector("#instructions");
-const errorEl = document.querySelector("#error");
+const message =
+  document.querySelector("#message");
+
+const restart =
+  document.querySelector("#restart");
+
+const start =
+  document.querySelector("#start");
+
+const startBtn =
+  document.querySelector("#startBtn");
+
+const instructions =
+  document.querySelector("#instructions");
+
+const errorEl =
+  document.querySelector("#error");
 
 
 /* =========================================================
@@ -349,13 +465,16 @@ const errorEl = document.querySelector("#error");
    ========================================================= */
 
 let cameraStream = null;
+
 let timer = null;
+
 let startTime = null;
+
 let lastStatement = -1;
 
 
 /* =========================================================
-   AUSSAGE AUSWÄHLEN
+   ZUFÄLLIGE AUSSAGE
    ========================================================= */
 
 function pickStatement() {
@@ -366,7 +485,8 @@ function pickStatement() {
 
     i =
       Math.floor(
-        Math.random() * statements.length
+        Math.random() *
+        statements.length
       );
 
   }
@@ -379,6 +499,7 @@ function pickStatement() {
   lastStatement = i;
 
   return statements[i];
+
 }
 
 
@@ -399,7 +520,10 @@ async function startCamera() {
 
   try {
 
-    /* HTTPS prüfen */
+
+    /* -----------------------------------------
+       HTTPS PRÜFEN
+       ----------------------------------------- */
 
     if (
       !window.isSecureContext &&
@@ -413,7 +537,9 @@ async function startCamera() {
     }
 
 
-    /* Kamera-API prüfen */
+    /* -----------------------------------------
+       KAMERA-API PRÜFEN
+       ----------------------------------------- */
 
     if (
       !navigator.mediaDevices ||
@@ -427,17 +553,21 @@ async function startCamera() {
     }
 
 
+    /* -----------------------------------------
+       KAMERA ÖFFNEN
+       ----------------------------------------- */
+
     statusEl.textContent =
       "Kamera wird geöffnet …";
 
-
-    /* Kamera öffnen */
 
     cameraStream =
       await navigator.mediaDevices.getUserMedia({
 
         video: {
+
           facingMode: "user"
+
         },
 
         audio: false
@@ -445,7 +575,9 @@ async function startCamera() {
       });
 
 
-    /* Kamera mit Video verbinden */
+    /* -----------------------------------------
+       VIDEO VERBINDEN
+       ----------------------------------------- */
 
     video.srcObject =
       cameraStream;
@@ -454,18 +586,35 @@ async function startCamera() {
     await video.play();
 
 
-    /* Startbildschirm entfernen */
+    /* -----------------------------------------
+       STARTBILDSCHIRM AUSBLENDEN
+       ----------------------------------------- */
 
     start.classList.add("hidden");
 
 
-    /* Countdown starten */
+    /* -----------------------------------------
+       BUTTON ZURÜCKSETZEN
+       ----------------------------------------- */
+
+    startBtn.disabled = false;
+
+    startBtn.textContent =
+      "Kamera starten";
+
+
+    /* -----------------------------------------
+       ERSTE ANALYSE
+       ----------------------------------------- */
 
     startCountdown();
 
+
   }
 
+
   catch (err) {
+
 
     console.error(
       "KAMERA FEHLER:",
@@ -478,7 +627,8 @@ async function startCamera() {
       cameraStream
         .getTracks()
         .forEach(
-          track => track.stop()
+          track =>
+            track.stop()
         );
 
       cameraStream = null;
@@ -501,6 +651,7 @@ async function startCamera() {
 
     }
 
+
     else if (
       err.name ===
       "NotFoundError"
@@ -511,6 +662,7 @@ async function startCamera() {
 
     }
 
+
     else if (
       err.name ===
       "NotReadableError"
@@ -520,6 +672,7 @@ async function startCamera() {
         "Die Kamera wird bereits von einer anderen App verwendet.";
 
     }
+
 
     else if (err.message) {
 
@@ -532,12 +685,14 @@ async function startCamera() {
     errorEl.textContent =
       text;
 
+
     errorEl.style.display =
       "block";
 
 
     startBtn.disabled =
       false;
+
 
     startBtn.textContent =
       "Erneut versuchen";
@@ -548,21 +703,33 @@ async function startCamera() {
 
 
 /* =========================================================
-   5-SEKUNDEN-COUNTDOWN
+   5 SEKUNDEN STARTEN
    ========================================================= */
 
 function startCountdown() {
+
+
+  /* eventuell vorhandenen Countdown stoppen */
+
+  if (timer) {
+
+    cancelAnimationFrame(timer);
+
+    timer = null;
+
+  }
+
 
   startTime =
     performance.now();
 
 
-  statusEl.textContent =
-    "Schau in die Kamera";
-
-
   progress.style.width =
     "0%";
+
+
+  statusEl.textContent =
+    "Schau in die Kamera";
 
 
   timer =
@@ -574,10 +741,11 @@ function startCountdown() {
 
 
 /* =========================================================
-   COUNTDOWN AKTUALISIEREN
+   COUNTDOWN
    ========================================================= */
 
 function updateCountdown(now) {
+
 
   const elapsed =
     now - startTime;
@@ -602,7 +770,8 @@ function updateCountdown(now) {
     Math.max(
       0,
       Math.ceil(
-        (duration - elapsed) / 1000
+        (duration - elapsed) /
+        1000
       )
     );
 
@@ -614,6 +783,10 @@ function updateCountdown(now) {
 
   }
 
+
+  /* -----------------------------------------
+     5 SEKUNDEN VORBEI
+     ----------------------------------------- */
 
   if (elapsed >= duration) {
 
@@ -638,6 +811,7 @@ function updateCountdown(now) {
 
 function showStatement() {
 
+
   progress.style.width =
     "100%";
 
@@ -650,63 +824,23 @@ function showStatement() {
     pickStatement();
 
 
-  message.classList.add("show");
+  message.classList.add(
+    "show"
+  );
 
 }
 
 
 /* =========================================================
-   NEUSTART
+   NEUE PHYSIOGNOMISCHE ANALYSE
    ========================================================= */
 
 function resetDetection() {
 
-  if (timer) {
-    cancelAnimationFrame(timer);
-    timer = null;
-  }
 
-  // Kamera ausschalten
-  if (cameraStream) {
-    cameraStream
-      .getTracks()
-      .forEach(track => track.stop());
-
-    cameraStream = null;
-  }
-
-  // Video zurücksetzen
-  video.srcObject = null;
-
-  // Horoskop ausblenden
-  message.classList.remove("show");
-  message.textContent = "";
-
-  // Fortschrittsbalken zurücksetzen
-  progress.style.width = "0%";
-
-  // Startbildschirm wieder anzeigen
-  start.classList.remove("hidden");
-
-  // Button zurücksetzen
-  startBtn.disabled = false;
-  startBtn.textContent = "Kamera starten";
-
-  instructions.textContent =
-    "Tippe auf „Kamera starten“ und erlaube den Kamerazugriff.";
-
-  errorEl.style.display = "none";
-
-  statusEl.textContent =
-    "Kamera bereit";
-}
-
-    cancelAnimationFrame(timer);
-
-    timer = null;
-
-  }
-
+  /* -----------------------------------------
+     ALTE AUSSAGE AUSBLENDEN
+     ----------------------------------------- */
 
   message.classList.remove(
     "show"
@@ -717,15 +851,11 @@ function resetDetection() {
     "";
 
 
-  progress.style.width =
-    "0%";
+  /* -----------------------------------------
+     NEUEN COUNTDOWN STARTEN
+     ----------------------------------------- */
 
-
-  startTime = null;
-
-
-  statusEl.textContent =
-    "Schau in die Kamera";
+  startCountdown();
 
 }
 
@@ -750,6 +880,7 @@ message.addEventListener(
   "click",
   resetDetection
 );
+
 
 </script>
 
