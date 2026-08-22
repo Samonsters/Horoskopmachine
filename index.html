@@ -8,6 +8,13 @@
 
   <meta name="theme-color" content="#000000">
 
+  <!-- iPad / iPhone Web-App -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Du">
+
+  <meta name="mobile-web-app-capable" content="yes">
+
   <title>Du</title>
 
   <style>
@@ -23,6 +30,10 @@
       overflow: hidden;
       font-family: Arial, Helvetica, sans-serif;
       color: #fff;
+
+      /* verhindert unerwünschtes Scrollen */
+      position: fixed;
+      inset: 0;
     }
 
     body {
@@ -32,10 +43,14 @@
     #video {
       position: absolute;
       inset: 0;
+
       width: 100%;
       height: 100%;
+
       object-fit: cover;
+
       transform: scaleX(-1);
+
       background: #000;
     }
 
@@ -61,12 +76,15 @@
       top: max(24px, env(safe-area-inset-top));
 
       left: 50%;
+
       transform: translateX(-50%);
 
       width: 90%;
 
       font-size: 14px;
+
       letter-spacing: .08em;
+
       text-transform: uppercase;
 
       opacity: .85;
@@ -86,13 +104,15 @@
         );
 
       left: 50%;
+
       transform: translateX(-50%);
 
       width: min(320px, 72vw);
 
       height: 2px;
 
-      background: rgba(255,255,255,.28);
+      background:
+        rgba(255,255,255,.28);
 
       overflow: hidden;
 
@@ -101,6 +121,7 @@
 
     #progress {
       width: 0%;
+
       height: 100%;
 
       background: #fff;
@@ -117,6 +138,7 @@
       display: flex;
 
       align-items: center;
+
       justify-content: center;
 
       padding: 8vw;
@@ -149,6 +171,7 @@
 
     #message.show {
       opacity: 1;
+
       pointer-events: auto;
     }
 
@@ -200,6 +223,7 @@
       flex-direction: column;
 
       align-items: center;
+
       justify-content: center;
 
       gap: 18px;
@@ -520,11 +544,6 @@ async function startCamera() {
 
   try {
 
-
-    /* -----------------------------------------
-       HTTPS PRÜFEN
-       ----------------------------------------- */
-
     if (
       !window.isSecureContext &&
       location.hostname !== "localhost"
@@ -537,10 +556,6 @@ async function startCamera() {
     }
 
 
-    /* -----------------------------------------
-       KAMERA-API PRÜFEN
-       ----------------------------------------- */
-
     if (
       !navigator.mediaDevices ||
       !navigator.mediaDevices.getUserMedia
@@ -552,10 +567,6 @@ async function startCamera() {
 
     }
 
-
-    /* -----------------------------------------
-       KAMERA ÖFFNEN
-       ----------------------------------------- */
 
     statusEl.textContent =
       "Kamera wird geöffnet …";
@@ -575,10 +586,6 @@ async function startCamera() {
       });
 
 
-    /* -----------------------------------------
-       VIDEO VERBINDEN
-       ----------------------------------------- */
-
     video.srcObject =
       cameraStream;
 
@@ -586,16 +593,8 @@ async function startCamera() {
     await video.play();
 
 
-    /* -----------------------------------------
-       STARTBILDSCHIRM AUSBLENDEN
-       ----------------------------------------- */
-
     start.classList.add("hidden");
 
-
-    /* -----------------------------------------
-       BUTTON ZURÜCKSETZEN
-       ----------------------------------------- */
 
     startBtn.disabled = false;
 
@@ -603,18 +602,12 @@ async function startCamera() {
       "Kamera starten";
 
 
-    /* -----------------------------------------
-       ERSTE ANALYSE
-       ----------------------------------------- */
-
     startCountdown();
-
 
   }
 
 
   catch (err) {
-
 
     console.error(
       "KAMERA FEHLER:",
@@ -708,9 +701,6 @@ async function startCamera() {
 
 function startCountdown() {
 
-
-  /* eventuell vorhandenen Countdown stoppen */
-
   if (timer) {
 
     cancelAnimationFrame(timer);
@@ -729,7 +719,7 @@ function startCountdown() {
 
 
   statusEl.textContent =
-    "Schau in die Kamera";
+    "Schau in die Kamera · Physiognomie wird analysiert";
 
 
   timer =
@@ -745,7 +735,6 @@ function startCountdown() {
    ========================================================= */
 
 function updateCountdown(now) {
-
 
   const elapsed =
     now - startTime;
@@ -779,14 +768,10 @@ function updateCountdown(now) {
   if (remaining > 0) {
 
     statusEl.textContent =
-      `Schau in die Kamera · ${remaining}`;
+      `Schau in die Kamera · Physiognomie wird analysiert · ${remaining}`;
 
   }
 
-
-  /* -----------------------------------------
-     5 SEKUNDEN VORBEI
-     ----------------------------------------- */
 
   if (elapsed >= duration) {
 
@@ -810,7 +795,6 @@ function updateCountdown(now) {
    ========================================================= */
 
 function showStatement() {
-
 
   progress.style.width =
     "100%";
@@ -837,11 +821,6 @@ function showStatement() {
 
 function resetDetection() {
 
-
-  /* -----------------------------------------
-     ALTE AUSSAGE AUSBLENDEN
-     ----------------------------------------- */
-
   message.classList.remove(
     "show"
   );
@@ -850,10 +829,6 @@ function resetDetection() {
   message.textContent =
     "";
 
-
-  /* -----------------------------------------
-     NEUEN COUNTDOWN STARTEN
-     ----------------------------------------- */
 
   startCountdown();
 
