@@ -2,6 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="utf-8">
+
   <meta name="viewport"
         content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 
@@ -58,13 +59,11 @@
       left: 50%;
       transform: translateX(-50%);
       width: 90%;
-
       font-size: 14px;
       letter-spacing: .08em;
       text-transform: uppercase;
       opacity: .85;
       text-align: center;
-
       z-index: 5;
     }
 
@@ -73,13 +72,10 @@
       bottom: max(28px, calc(env(safe-area-inset-bottom) + 18px));
       left: 50%;
       transform: translateX(-50%);
-
       width: min(320px, 72vw);
       height: 2px;
-
       background: rgba(255,255,255,.28);
       overflow: hidden;
-
       z-index: 5;
     }
 
@@ -93,26 +89,18 @@
     #message {
       position: absolute;
       inset: 0;
-
       display: flex;
       align-items: center;
       justify-content: center;
-
       padding: 8vw;
-
       background: rgba(0,0,0,.72);
-
       text-align: center;
-
       font-size: clamp(28px, 5vw, 64px);
       line-height: 1.08;
       font-weight: 500;
-
       opacity: 0;
       pointer-events: none;
-
       transition: opacity .45s ease;
-
       z-index: 20;
     }
 
@@ -123,22 +111,16 @@
 
     #restart {
       position: absolute;
-
       bottom: max(34px, calc(env(safe-area-inset-bottom) + 24px));
       left: 50%;
       transform: translateX(-50%);
-
       border: 1px solid rgba(255,255,255,.7);
       background: transparent;
       color: white;
-
       border-radius: 999px;
       padding: 12px 18px;
-
       font-size: 14px;
-
       display: none;
-
       z-index: 25;
     }
 
@@ -149,19 +131,14 @@
     #start {
       position: absolute;
       inset: 0;
-
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-
       gap: 18px;
       padding: 30px;
-
       text-align: center;
-
       background: #000;
-
       z-index: 30;
     }
 
@@ -169,11 +146,8 @@
       border: 1px solid #fff;
       background: #fff;
       color: #000;
-
       border-radius: 999px;
-
       padding: 14px 22px;
-
       font-size: 17px;
     }
 
@@ -194,6 +168,7 @@
       font-size: 13px;
       line-height: 1.4;
       display: none;
+      text-align: center;
     }
 
     .hidden {
@@ -244,16 +219,6 @@
 
 
 <script type="module">
-
-/* =========================================================
-   MEDIAPIPE
-   ========================================================= */
-
-import {
-  FaceDetector,
-  FilesetResolver
-} from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/+esm";
-
 
 /* =========================================================
    AUSSAGEN
@@ -357,15 +322,10 @@ const errorEl = document.querySelector("#error");
    ========================================================= */
 
 let detector = null;
-
 let cameraStream = null;
-
 let faceStart = null;
-
 let triggered = false;
-
 let lastVideoTime = -1;
-
 let lastStatement = -1;
 
 
@@ -392,7 +352,7 @@ function pickStatement() {
 
 
 /* =========================================================
-   MEDIAPIPE LADEN
+   MEDIAPIPE DYNAMISCH LADEN
    ========================================================= */
 
 async function initDetector() {
@@ -400,30 +360,60 @@ async function initDetector() {
   statusEl.textContent =
     "Gesichtserkennung wird geladen …";
 
-  const vision =
-    await FilesetResolver.forVisionTasks(
-      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm"
+  try {
+
+    const visionModule =
+      await import(
+        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/+esm"
+      );
+
+    const {
+      FaceDetector,
+      FilesetResolver
+    } = visionModule;
+
+
+    const vision =
+      await FilesetResolver.forVisionTasks(
+        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm"
+      );
+
+
+    detector =
+      await FaceDetector.createFromOptions(
+        vision,
+        {
+
+          baseOptions: {
+
+            modelAssetPath:
+              "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite"
+
+          },
+
+          runningMode: "VIDEO",
+
+          minDetectionConfidence: 0.55
+
+        }
+      );
+
+  }
+
+  catch (err) {
+
+    console.error(
+      "MEDIAPIPE FEHLER:",
+      err
     );
 
-
-  detector =
-    await FaceDetector.createFromOptions(
-      vision,
-      {
-
-        baseOptions: {
-
-          modelAssetPath:
-            "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite"
-
-        },
-
-        runningMode: "VIDEO",
-
-        minDetectionConfidence: 0.55
-
-      }
+    throw new Error(
+      "Die Gesichtserkennung konnte nicht geladen werden. " +
+      "Bitte überprüfe die Internetverbindung."
     );
+
+  }
+
 }
 
 
@@ -440,10 +430,11 @@ async function startCamera() {
 
   errorEl.style.display = "none";
 
+
   try {
 
     /* -----------------------------------------
-       SICHERHEITSCHECK
+       HTTPS
        ----------------------------------------- */
 
     if (
@@ -452,15 +443,14 @@ async function startCamera() {
     ) {
 
       throw new Error(
-        "Diese Seite läuft nicht über HTTPS. " +
-        "Bitte öffne sie über eine HTTPS-Webadresse."
+        "Diese Seite läuft nicht über HTTPS."
       );
 
     }
 
 
     /* -----------------------------------------
-       KAMERA-API CHECK
+       KAMERA API
        ----------------------------------------- */
 
     if (
@@ -469,7 +459,7 @@ async function startCamera() {
     ) {
 
       throw new Error(
-        "Der Browser stellt keine Kamera-API bereit."
+        "Dieser Browser unterstützt den Kamerazugriff nicht."
       );
 
     }
@@ -508,7 +498,7 @@ async function startCamera() {
 
 
     /* -----------------------------------------
-       VIDEO VERBINDEN
+       VIDEO
        ----------------------------------------- */
 
     video.srcObject =
@@ -519,18 +509,14 @@ async function startCamera() {
 
 
     /* -----------------------------------------
-       KAMERA IST JETZT SICHTBAR
+       STARTSCREEN AUSBLENDEN
        ----------------------------------------- */
 
     start.classList.add("hidden");
 
 
-    statusEl.textContent =
-      "Gesichtserkennung wird geladen …";
-
-
     /* -----------------------------------------
-       MEDIAPIPE LADEN
+       MEDIAPIPE
        ----------------------------------------- */
 
     await initDetector();
@@ -541,9 +527,7 @@ async function startCamera() {
 
 
     lastVideoTime = -1;
-
     faceStart = null;
-
     triggered = false;
 
 
@@ -559,8 +543,6 @@ async function startCamera() {
     );
 
 
-    /* Kamera wieder schließen */
-
     if (cameraStream) {
 
       cameraStream
@@ -571,10 +553,6 @@ async function startCamera() {
 
     }
 
-
-    /* -----------------------------------------
-       FEHLERMELDUNGEN
-       ----------------------------------------- */
 
     let text =
       "Kamera konnte nicht gestartet werden.";
@@ -602,10 +580,10 @@ async function startCamera() {
 
     }
 
-    else if (err.name === "OverconstrainedError") {
+    else if (err.name === "SecurityError") {
 
       text =
-        "Die Kamera unterstützt die gewünschte Einstellung nicht.";
+        "Der Browser hat den Kamerazugriff aus Sicherheitsgründen blockiert.";
 
     }
 
@@ -823,6 +801,15 @@ restart.addEventListener(
 message.addEventListener(
   "click",
   resetDetection
+);
+
+
+/* =========================================================
+   START
+   ========================================================= */
+
+console.log(
+  "Horoskopmaschine geladen."
 );
 
 </script>
