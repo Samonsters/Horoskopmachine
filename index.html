@@ -662,6 +662,44 @@ function showStatement() {
 function resetDetection() {
 
   if (timer) {
+    cancelAnimationFrame(timer);
+    timer = null;
+  }
+
+  // Kamera ausschalten
+  if (cameraStream) {
+    cameraStream
+      .getTracks()
+      .forEach(track => track.stop());
+
+    cameraStream = null;
+  }
+
+  // Video zurücksetzen
+  video.srcObject = null;
+
+  // Horoskop ausblenden
+  message.classList.remove("show");
+  message.textContent = "";
+
+  // Fortschrittsbalken zurücksetzen
+  progress.style.width = "0%";
+
+  // Startbildschirm wieder anzeigen
+  start.classList.remove("hidden");
+
+  // Button zurücksetzen
+  startBtn.disabled = false;
+  startBtn.textContent = "Kamera starten";
+
+  instructions.textContent =
+    "Tippe auf „Kamera starten“ und erlaube den Kamerazugriff.";
+
+  errorEl.style.display = "none";
+
+  statusEl.textContent =
+    "Kamera bereit";
+}
 
     cancelAnimationFrame(timer);
 
